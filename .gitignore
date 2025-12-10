@@ -1,0 +1,14 @@
+.DS_Store
+.venv/
+.vscode/
+typings/
+__pycache__
+.pytest_cache/
+.coverage
+.metadata_never_index
+.Trash-1000
+.Trashes
+
+lib/
+settings.toml
+boot_out.txt

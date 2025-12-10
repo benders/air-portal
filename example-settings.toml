@@ -1,0 +1,6 @@
+CIRCUITPY_WIFI_SSID = "your_wifi_ssid"
+CIRCUITPY_WIFI_PASSWORD = "your_wifi_password"
+PURPLEAIR_API_KEY = "your_api_key"
+PURPLEAIR_SENSOR_ID = "your_sensor_id"
+# ADAFRUIT_AIO_USERNAME = "your_aio_username"
+# ADAFRUIT_AIO_KEY = "your_aio_key"
