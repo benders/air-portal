@@ -7,6 +7,8 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Try common Linux mount points
     if [ -d "/mnt/CIRCUITPY" ]; then
         TARGET="/mnt/CIRCUITPY"
+    elif [ -d "/run/media/$USER/CIRCUITPY" ]; then
+        TARGET="/run/media/$USER/CIRCUITPY"
     elif [ -d "/media/$USER/CIRCUITPY" ]; then
         TARGET="/media/$USER/CIRCUITPY"
     else
