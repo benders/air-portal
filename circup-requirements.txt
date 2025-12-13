@@ -1,6 +1,3 @@
-Found device pyportal at ., running CircuitPython 10.0.3.
-Using latest bundle for adafruit/Adafruit_CircuitPython_Bundle (20251123).
-Using latest bundle for adafruit/CircuitPython_Community_Bundle (20251119).
 adafruit_pixelbuf==2.0.10
 adafruit_adt7410==2.0.6
 adafruit_connection_manager==3.1.6
