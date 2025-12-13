@@ -56,4 +56,6 @@ if [ ! -f "$TARGET/boot_out.txt" ]; then
 fi
 
 echo "All safety checks passed. Syncing to $TARGET ..."
+sync
 rsync -av --cvs-exclude --exclude=.\* --exclude=boot_out.txt --delete . "$TARGET/."
+sync
