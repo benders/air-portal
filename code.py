@@ -109,7 +109,7 @@ if __name__ == "__main__":
     pyportal.network.requests.get("http://example.com")  # Warm up requests module
 
     try:
-        sensor_metadata = purpleair.fetch_sensor_data(API_KEY, SENSOR_ID, METADATA_FIELDS)
+        sensor_metadata = purpleair.fetch_sensor_data(pyportal.network.requests, API_KEY, SENSOR_ID, METADATA_FIELDS)
         print(sensor_metadata)
     except Exception as e:
         print(f"Error fetching sensor metadata: {e}")

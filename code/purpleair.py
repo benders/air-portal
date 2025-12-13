@@ -6,8 +6,6 @@ This script queries the PurpleAir API to retrieve data from a specific sensor.
 It uses the API key and sensor ID from config.yml file.
 """
 
-import requests
-
 WHITE = (255,255,255)
 GREEN  = (0, 228, 0)
 YELLOW = (255, 255, 0)
@@ -25,7 +23,7 @@ def url_encode(string):
             encoded_string += f"%{ord(character):x}"
     return encoded_string
 
-def fetch_sensor_data(api_key, sensor_id, field_list):
+def fetch_sensor_data(http_requests, api_key, sensor_id, field_list):
     """
     Fetch data for a specific sensor from PurpleAir API.
 
@@ -61,7 +59,7 @@ def fetch_sensor_data(api_key, sensor_id, field_list):
 
     try:
         print(f"Fetching data for sensor {sensor_id}")
-        response = requests.get(url + "?" + param_string, headers=headers)
+        response = http_requests.get(url + "?" + param_string, headers=headers)
 
         # Check if request was successful
         if response.status_code == 200:
