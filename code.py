@@ -2,6 +2,7 @@ import time
 import board
 import busio
 import displayio
+import os
 
 import adafruit_adt7410
 import adafruit_touchscreen
@@ -13,6 +14,7 @@ from adafruit_display_text.label import Label
 from adafruit_pyportal import PyPortal
 
 from code import display_utils
+from code import purpleair
 
 # ------------- Functions ------------- #
 
@@ -96,6 +98,23 @@ if __name__ == "__main__":
         print("IP address:", pyportal.network.ip_address)
     else:
         raise RuntimeError("Network connection failed!")
+
+    METADATA_FIELDS = ["name", "latitude", "longitude", "altitude", "last_seen"]
+    # AIR_QUALITY_FIELDS = ["pm2.5", "confidence", "humidity", "temperature", "pressure"]
+    AIR_QUALITY_FIELDS = ["pm2.5", "last_seen"]
+
+    API_KEY = os.getenv("PURPLEAIR_API_KEY")
+    SENSOR_ID = os.getenv("PURPLEAIR_SENSOR_ID")
+
+    pyportal.network.requests.get("http://example.com")  # Warm up requests module
+
+    try:
+        sensor_metadata = purpleair.fetch_sensor_data(API_KEY, SENSOR_ID, METADATA_FIELDS)
+        print(sensor_metadata)
+    except Exception as e:
+        print(f"Error fetching sensor metadata: {e}")
+        # Continue with the program even if we can't get the initial metadata
+
 
     # ------------- Code Loop ------------- #
     while True:
