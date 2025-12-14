@@ -3,13 +3,13 @@ import board
 import busio
 import displayio
 import os
+import random
 
 import adafruit_adt7410
 import adafruit_touchscreen
 
 from analogio import AnalogIn
 
-from adafruit_bitmap_font import bitmap_font
 from adafruit_display_text.label import Label
 from adafruit_pyportal import PyPortal
 
@@ -63,32 +63,39 @@ if __name__ == "__main__":
                                         size=(screen_width, screen_height))
 
     # ---------- Text Boxes ------------- #
+
+    # from font_orbitron_light_webfont_18_latin1 import FONT as orbitron_font
+    from font_junction_regular_24_latin1 import FONT as standard_font
+    from font_junction_bold_72_latin1 import FONT as large_font
+    # from font_league_spartan_medium_18_latin1 import FONT as spartan_font
+    
     # Set the font and preload letters
-    font = bitmap_font.load_font("/fonts/Helvetica-Bold-16.bdf")
-    font.load_glyphs(b"abcdefghjiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- ()")
+    # font = bitmap_font.load_font("/fonts/Helvetica-Bold-16.bdf")
+    # font.load_glyphs(b"abcdefghjiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- ()")
 
     splash = displayio.Group()
     sensor_view = displayio.Group()
 
-    sensors_label = Label(font, text="Data View", color=0x03AD31)
-    sensors_label.x = TABS_X
-    sensors_label.y = TABS_Y
+    sensors_label = Label(standard_font, text="Please wait...", color=bytes(purpleair.WHITE))
+    sensors_label.x = TABS_X + 16  # Indents the text layout
+    sensors_label.y = TABS_Y + 16  # Slightly lower than top edge
     sensor_view.append(sensors_label)
 
-    sensor_data = Label(font, text="Data View", color=0x03AD31)
-    sensor_data.x = TABS_X + 16  # Indents the text layout
-    sensor_data.y = 150
-    sensor_view.append(sensor_data)
+    aqi_display = Label(large_font, text="Loading...", color=bytes(purpleair.WHITE))
+    aqi_display.x = TABS_X + 16  # Indents the text layout
+    aqi_display.y = 120
+    sensor_view.append(aqi_display)
 
-    display_utils.text_box(
-        font,
-        sensors_label,
-        TABS_Y,
-        "This screen can display sensor readings.",
-        40,
-    )
+    # display_utils.text_box(
+    #     sensors_label,
+    #     TABS_Y,
+    #     "Please wait...",
+    #     40,
+    # )
 
     board.DISPLAY.root_group = splash
+    display_utils.layerVisibility("show", splash, sensor_view)
+
 
     # ------------- Network Init --------------#
     pyportal.network.connect()
@@ -108,21 +115,60 @@ if __name__ == "__main__":
 
     pyportal.network.requests.get("http://example.com")  # Warm up requests module
 
+    # Initialize PurpleAir client with the requests library
+    purpleair_client = purpleair.PurpleAirClient(pyportal.network.requests)
+
+    # Fetch sensor metadata once at start
     try:
-        sensor_metadata = purpleair.fetch_sensor_data(pyportal.network.requests, API_KEY, SENSOR_ID, METADATA_FIELDS)
+        sensor_metadata = purpleair_client.fetch_sensor_data(API_KEY, SENSOR_ID, METADATA_FIELDS)
         print(sensor_metadata)
+        # Change the label to the sensor name
+        name = sensor_metadata["sensor"]["name"]
+        display_utils.text_box(
+            sensors_label,
+            TABS_Y,
+            name,
+            40,
+        )
     except Exception as e:
         print(f"Error fetching sensor metadata: {e}")
         # Continue with the program even if we can't get the initial metadata
 
+    UPDATE_INTERVAL = 120  # seconds
+    update_deadline = 0 # Force immediate update on first loop
 
     # ------------- Code Loop ------------- #
     while True:
-        touch = ts.touch_point
-        light = light_sensor.value
-        sensor_data.text = "Touch: {}\nLight: {}\nTemp: {:.0f}°F".format(
-            touch, light, get_temperature(adt)
-        )
+        # touch = ts.touch_point
+        # light = light_sensor.value
+        # sensor_data.text = "Touch: {}\nLight: {}\nTemp: {:.0f}°F".format(
+        #     touch, light, get_temperature(adt)
+        # )
 
-        display_utils.layerVisibility("show", splash, sensor_view)
+        if time.monotonic() >= update_deadline:
+            try:
+                sensor_response = purpleair_client.fetch_sensor_data(API_KEY, SENSOR_ID, AIR_QUALITY_FIELDS)
+                print(sensor_response)
+                sensor = sensor_response.get("sensor", {})
+                pm25 = sensor.get("pm2.5")
+                aqi = purpleair.aqiFromPM(pm25)
+                raw_color = purpleair.aqiColor(aqi)
+
+                # Set new deadline
+                update_deadline = time.monotonic() + (UPDATE_INTERVAL + random.randrange(0, 30))
+                print(f"Update in {update_deadline - time.monotonic()} seconds")
+            except Exception as e:
+                print(f"Error fetching sensor data: {e}")
+                # Set a shorter deadline for retry on error
+                update_deadline = time.monotonic() + 30
+                print(f"Will retry in 30 seconds")
+                # Set blank display on error
+                raw_color = purpleair.RED
+                aqi = None  # Blank display
+
+        value_string = "%3d" % aqi if aqi is not None else " --"  # Blank if aqi is None (error)
+        aqi_display.text = value_string
+        aqi_display.color = bytes(raw_color)
+
+        # display_utils.layerVisibility("show", splash, sensor_view)
         time.sleep(0.1)

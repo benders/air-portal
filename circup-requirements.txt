@@ -17,4 +17,4 @@ adafruit_register==1.11.1
 adafruit_io==6.0.4
 adafruit_esp32spi==11.0.0
 adafruit_pyportal==7.1.2
-adafruit_display_text==3.3.4
+adafruit_display_text==3.3.4font_junction_regular_24_latin1

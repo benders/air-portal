@@ -23,63 +23,76 @@ def url_encode(string):
             encoded_string += f"%{ord(character):x}"
     return encoded_string
 
-def fetch_sensor_data(http_requests, api_key, sensor_id, field_list):
-    """
-    Fetch data for a specific sensor from PurpleAir API.
 
-    Args:
-        api_key (str): PurpleAir API key
-        sensor_id (str or int): ID of the sensor to query
-        field_list (list or str): List of fields to retrieve
-
-    Returns:
-        dict: Sensor data in JSON format
+class PurpleAirClient:
+    """Client for fetching data from PurpleAir API."""
+    
+    def __init__(self, requests):
+        """
+        Initialize PurpleAir client with a requests library implementation.
         
-    Raises:
-        ValueError: If field_list is not a list or string
-        Exception: For API errors, network errors, or data parsing issues
-    """
-    base_url = "https://api.purpleair.com/v1"
-    endpoint = f"/sensors/{sensor_id}"
-    url = f"{base_url}{endpoint}"
+        Args:
+            requests: HTTP requests library (e.g., adafruit_requests or standard requests)
+        """
+        self.requests = requests
+    
+    def fetch_sensor_data(self, api_key, sensor_id, field_list):
+        """
+        Fetch data for a specific sensor from PurpleAir API.
 
-    headers = {
-        "X-API-Key": api_key,
-        "Content-Type": "application/json"
-    }
+        Args:
+            api_key (str): PurpleAir API key
+            sensor_id (str or int): ID of the sensor to query
+            field_list (list or str): List of fields to retrieve
 
-    if isinstance(field_list, list):
-        fields = ','.join(field_list)
-    elif isinstance(field_list, str):
-        fields = field_list
-    else:
-        raise ValueError("field_list must be a list or a string")
+        Returns:
+            dict: Sensor data in JSON format
+            
+        Raises:
+            ValueError: If field_list is not a list or string
+            Exception: For API errors, network errors, or data parsing issues
+        """
+        base_url = "https://api.purpleair.com/v1"
+        endpoint = f"/sensors/{sensor_id}"
+        url = f"{base_url}{endpoint}"
 
-    param_string = "fields=" + url_encode(fields)
+        headers = {
+            "X-API-Key": api_key,
+            "Content-Type": "application/json"
+        }
 
-    try:
-        print(f"Fetching data for sensor {sensor_id}")
-        response = http_requests.get(url + "?" + param_string, headers=headers)
-
-        # Check if request was successful
-        if response.status_code == 200:
-            return response.json()
+        if isinstance(field_list, list):
+            fields = ','.join(field_list)
+        elif isinstance(field_list, str):
+            fields = field_list
         else:
-            error_msg = f"API request failed with status code {response.status_code}: {response.text}"
+            raise ValueError("field_list must be a list or a string")
+
+        param_string = "fields=" + url_encode(fields)
+
+        try:
+            print(f"Fetching data for sensor {sensor_id}")
+            response = self.requests.get(url + "?" + param_string, headers=headers)
+
+            # Check if request was successful
+            if response.status_code == 200:
+                return response.json()
+            else:
+                error_msg = f"API request failed with status code {response.status_code}: {response.text}"
+                print(error_msg)
+                raise Exception(error_msg)
+        except ValueError as e:
+            error_msg = f"Request error: {e}"
             print(error_msg)
             raise Exception(error_msg)
-    except ValueError as e:
-        error_msg = f"Request error: {e}"
-        print(error_msg)
-        raise Exception(error_msg)
-    except OSError as e:
-        error_msg = f"Network error: {e}"
-        print(error_msg)
-        raise Exception(error_msg)
-    except Exception as e:
-        error_msg = f"Unexpected error: {e}"
-        print(error_msg)
-        raise Exception(error_msg)
+        except OSError as e:
+            error_msg = f"Network error: {e}"
+            print(error_msg)
+            raise Exception(error_msg)
+        except Exception as e:
+            error_msg = f"Unexpected error: {e}"
+            print(error_msg)
+            raise Exception(error_msg)
 
 # Convert US AQI from raw pm2.5 data
 def aqiFromPM(pm):
