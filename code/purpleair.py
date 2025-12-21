@@ -6,6 +6,8 @@ This script queries the PurpleAir API to retrieve data from a specific sensor.
 It uses the API key and sensor ID from config.yml file.
 """
 
+import gc
+
 WHITE = (255,255,255)
 GREEN  = (0, 228, 0)
 YELLOW = (255, 255, 0)
@@ -72,7 +74,10 @@ class PurpleAirClient:
 
         try:
             print(f"Fetching data for sensor {sensor_id}")
+            # Collect garbage before making the request to free up memory on constrained devices
+            gc.collect()
             response = self.requests.get(url + "?" + param_string, headers=headers)
+            gc.collect()
 
             # Check if request was successful
             if response.status_code == 200:
@@ -82,11 +87,11 @@ class PurpleAirClient:
                 print(error_msg)
                 raise Exception(error_msg)
         except ValueError as e:
-            error_msg = f"Request error: {e}"
+            error_msg = f"ValueError: {e}"
             print(error_msg)
             raise Exception(error_msg)
         except OSError as e:
-            error_msg = f"Network error: {e}"
+            error_msg = f"OSError: {e}"
             print(error_msg)
             raise Exception(error_msg)
         except Exception as e:

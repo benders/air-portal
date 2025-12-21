@@ -1,14 +1,14 @@
 import time
 import board
-import busio
+# import busio
 import displayio
 import os
 import random
 
-import adafruit_adt7410
+# import adafruit_adt7410
 import adafruit_touchscreen
 
-from analogio import AnalogIn
+# from analogio import AnalogIn
 
 from adafruit_display_text.label import Label
 from adafruit_pyportal import PyPortal
@@ -33,15 +33,15 @@ if __name__ == "__main__":
     )
 
     # ------------- Inputs and Outputs Setup ------------- #
-    light_sensor = AnalogIn(board.LIGHT)
-    try:
-        # attempt to init. the temperature sensor
-        i2c_bus = busio.I2C(board.SCL, board.SDA)
-        adt = adafruit_adt7410.ADT7410(i2c_bus, address=0x48)
-        adt.high_resolution = True
-    except ValueError:
-        # Did not find ADT7410. Probably running on Titano or Pynt
-        adt = None
+    # light_sensor = AnalogIn(board.LIGHT)
+    # try:
+    #     # attempt to init. the temperature sensor
+    #     i2c_bus = busio.I2C(board.SCL, board.SDA)
+    #     adt = adafruit_adt7410.ADT7410(i2c_bus, address=0x48)
+    #     adt.high_resolution = True
+    # except ValueError:
+    #     # Did not find ADT7410. Probably running on Titano or Pynt
+    #     adt = None
 
     # ------------- Screen Setup ------------- #
     # pyportal.set_background("/pyportal_startup.bmp")  # Display an image until the loop starts
@@ -157,6 +157,11 @@ if __name__ == "__main__":
                 # Set new deadline
                 update_deadline = time.monotonic() + (UPDATE_INTERVAL + random.randrange(0, 30))
                 print(f"Update in {update_deadline - time.monotonic()} seconds")
+            except OSError as e:
+                print(f"OSError while fetching sensor data: {e}")
+                print("Resetting...")
+                import microcontroller
+                microcontroller.reset()
             except Exception as e:
                 print(f"Error fetching sensor data: {e}")
                 # Set a shorter deadline for retry on error
@@ -166,7 +171,7 @@ if __name__ == "__main__":
                 raw_color = purpleair.RED
                 aqi = None  # Blank display
 
-        value_string = "%3d" % aqi if aqi is not None else " --"  # Blank if aqi is None (error)
+        value_string = "%3d" % aqi if aqi is not None else "no data"  # Blank if aqi is None (error)
         aqi_display.text = value_string
         aqi_display.color = bytes(raw_color)
 
