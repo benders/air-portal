@@ -104,18 +104,10 @@ class PurpleAirClient:
 
 # Convert US AQI from raw pm2.5 data
 def aqiFromPM(pm):
-    if pm == 'undefined':
-        raise ValueError(f"PM value ({pm}) is undefined")
-    
     try:
         pm_float = float(pm)
     except (ValueError, TypeError):
         raise ValueError(f"PM value ({pm}) is not a number")
-    
-    if pm_float < 0:
-        raise ValueError(f"PM value ({pm_float}) cannot be negative")
-    elif pm_float > 1000:
-        raise ValueError(f"PM value ({pm_float}) is unrealistically high ")
 
     """
                                         AQI   | RAW PM2.5
