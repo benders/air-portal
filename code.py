@@ -116,11 +116,11 @@ if __name__ == "__main__":
     pyportal.network.requests.get("http://example.com")  # Warm up requests module
 
     # Initialize PurpleAir client with the requests library
-    purpleair_client = purpleair.PurpleAirClient(pyportal.network.requests)
+    purpleair_client = purpleair.PurpleAirClient(pyportal.network.requests, API_KEY)
 
     # Fetch sensor metadata once at start
     try:
-        sensor_metadata = purpleair_client.fetch_sensor_data(API_KEY, SENSOR_ID, METADATA_FIELDS)
+        sensor_metadata = purpleair_client.fetch_sensor_data(SENSOR_ID, METADATA_FIELDS)
         print(sensor_metadata)
         # Change the label to the sensor name
         name = sensor_metadata["sensor"]["name"]
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
         if time.monotonic() >= update_deadline:
             try:
-                sensor_response = purpleair_client.fetch_sensor_data(API_KEY, SENSOR_ID, AIR_QUALITY_FIELDS)
+                sensor_response = purpleair_client.fetch_sensor_data(SENSOR_ID, AIR_QUALITY_FIELDS)
                 print(sensor_response)
                 sensor = sensor_response.get("sensor", {})
                 pm25 = sensor.get("pm2.5")

@@ -65,11 +65,10 @@ def test_fetch_sensor_data_success():
     
     # Create mock requests and client
     mock_requests = MockRequests(response_data=mock_data, status_code=200)
-    client = purpleair.PurpleAirClient(mock_requests)
+    client = purpleair.PurpleAirClient(mock_requests, api_key="test_api_key")
     
     # Fetch data
     result = client.fetch_sensor_data(
-        api_key="test_api_key",
         sensor_id=12345,
         field_list=["name", "pm2.5", "last_seen"]
     )
@@ -92,11 +91,10 @@ def test_fetch_sensor_data_with_list():
     
     mock_data = {"sensor": {"name": "Test"}}
     mock_requests = MockRequests(response_data=mock_data)
-    client = purpleair.PurpleAirClient(mock_requests)
+    client = purpleair.PurpleAirClient(mock_requests, api_key="key")
     
     # Pass fields as a list
     result = client.fetch_sensor_data(
-        api_key="key",
         sensor_id=123,
         field_list=["name", "pm2.5", "temperature"]
     )
@@ -114,11 +112,10 @@ def test_fetch_sensor_data_with_string():
     
     mock_data = {"sensor": {"name": "Test"}}
     mock_requests = MockRequests(response_data=mock_data)
-    client = purpleair.PurpleAirClient(mock_requests)
+    client = purpleair.PurpleAirClient(mock_requests, api_key="key")
     
     # Pass fields as a string
     result = client.fetch_sensor_data(
-        api_key="key",
         sensor_id=123,
         field_list="name,pm2.5"
     )
@@ -135,11 +132,10 @@ def test_fetch_sensor_data_api_error():
         response_data={"error": "Invalid API key"},
         status_code=403
     )
-    client = purpleair.PurpleAirClient(mock_requests)
+    client = purpleair.PurpleAirClient(mock_requests, api_key="bad_key")
     
     try:
         result = client.fetch_sensor_data(
-            api_key="bad_key",
             sensor_id=123,
             field_list="name"
         )
@@ -154,11 +150,10 @@ def test_fetch_sensor_data_network_error():
     print("\nTest: fetch_sensor_data_network_error")
     
     mock_requests = MockRequests(should_fail=True)
-    client = purpleair.PurpleAirClient(mock_requests)
+    client = purpleair.PurpleAirClient(mock_requests, api_key="key")
     
     try:
         result = client.fetch_sensor_data(
-            api_key="key",
             sensor_id=123,
             field_list="name"
         )
@@ -173,11 +168,10 @@ def test_fetch_sensor_data_invalid_field_list():
     print("\nTest: fetch_sensor_data_invalid_field_list")
     
     mock_requests = MockRequests(response_data={})
-    client = purpleair.PurpleAirClient(mock_requests)
+    client = purpleair.PurpleAirClient(mock_requests, api_key="key")
     
     try:
         result = client.fetch_sensor_data(
-            api_key="key",
             sensor_id=123,
             field_list=12345  # Invalid type
         )

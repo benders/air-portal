@@ -2,8 +2,10 @@
 """
 PurpleAir Sensor Data Retrieval
 
-This script queries the PurpleAir API to retrieve data from a specific sensor.
-It uses the API key and sensor ID from config.yml file.
+CHANGELOG
+* 2025-12-23: Fix 0.0 bug, pass api_key to PurpleAirClient
+* 2025-12-14: Require instantion with requests library
+* 2025-09-02: Initial version
 """
 
 import gc
@@ -29,21 +31,22 @@ def url_encode(string):
 class PurpleAirClient:
     """Client for fetching data from PurpleAir API."""
     
-    def __init__(self, requests):
+    def __init__(self, requests, api_key):
         """
         Initialize PurpleAir client with a requests library implementation.
         
         Args:
             requests: HTTP requests library (e.g., adafruit_requests or standard requests)
+            api_key: PurpleAir API key
         """
         self.requests = requests
+        self.api_key = api_key
     
-    def fetch_sensor_data(self, api_key, sensor_id, field_list):
+    def fetch_sensor_data(self, sensor_id, field_list):
         """
         Fetch data for a specific sensor from PurpleAir API.
 
         Args:
-            api_key (str): PurpleAir API key
             sensor_id (str or int): ID of the sensor to query
             field_list (list or str): List of fields to retrieve
 
@@ -59,7 +62,7 @@ class PurpleAirClient:
         url = f"{base_url}{endpoint}"
 
         headers = {
-            "X-API-Key": api_key,
+            "X-API-Key": self.api_key,
             "Content-Type": "application/json"
         }
 
