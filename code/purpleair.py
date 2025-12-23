@@ -102,13 +102,18 @@ class PurpleAirClient:
 # Convert US AQI from raw pm2.5 data
 def aqiFromPM(pm):
     if pm == 'undefined':
-        return "-"
-    if not float(pm):
-        return "-"
-    if pm < 0:
-        return pm
-    if pm > 1000:
-        return "-"
+        raise ValueError(f"PM value ({pm}) is undefined")
+    
+    try:
+        pm_float = float(pm)
+    except (ValueError, TypeError):
+        raise ValueError(f"PM value ({pm}) is not a number")
+    
+    if pm_float < 0:
+        raise ValueError(f"PM value ({pm_float}) cannot be negative")
+    elif pm_float > 1000:
+        raise ValueError(f"PM value ({pm_float}) is unrealistically high ")
+
     """
                                         AQI   | RAW PM2.5
     Good                               0 - 50 | 0.0 – 12.0
@@ -120,22 +125,22 @@ def aqiFromPM(pm):
     Hazardous                       401 – 500 | 350.5 – 500.4
     """
 
-    if pm > 350.5:
-        return calcAQI(pm, 500, 401, 500.4, 350.5)  # Hazardous
-    elif pm > 250.5:
-        return calcAQI(pm, 400, 301, 350.4, 250.5)  # Hazardous
-    elif pm > 150.5:
-        return calcAQI(pm, 300, 201, 250.4, 150.5)  # Very Unhealthy
-    elif pm > 55.5:
-        return calcAQI(pm, 200, 151, 150.4, 55.5)  # Unhealthy
-    elif pm > 35.5:
-        return calcAQI(pm, 150, 101, 55.4, 35.5)  # Unhealthy for Sensitive Groups
-    elif pm > 12.1:
-        return calcAQI(pm, 100, 51, 35.4, 12.1)  # Moderate
-    elif pm >= 0:
-        return calcAQI(pm, 50, 0, 12, 0)  # Good
+    if pm_float > 350.5:
+        return calcAQI(pm_float, 500, 401, 500.4, 350.5)  # Hazardous
+    elif pm_float > 250.5:
+        return calcAQI(pm_float, 400, 301, 350.4, 250.5)  # Hazardous
+    elif pm_float > 150.5:
+        return calcAQI(pm_float, 300, 201, 250.4, 150.5)  # Very Unhealthy
+    elif pm_float > 55.5:
+        return calcAQI(pm_float, 200, 151, 150.4, 55.5)  # Unhealthy
+    elif pm_float > 35.5:
+        return calcAQI(pm_float, 150, 101, 55.4, 35.5)  # Unhealthy for Sensitive Groups
+    elif pm_float > 12.1:
+        return calcAQI(pm_float, 100, 51, 35.4, 12.1)  # Moderate
+    elif pm_float >= 0:
+        return calcAQI(pm_float, 50, 0, 12, 0)  # Good
     else:
-        return 'undefined'
+        raise ValueError(f"PM value ({pm_float}) is out of range")
 
 def aqiColor(aqi):
     if aqi > 300:
