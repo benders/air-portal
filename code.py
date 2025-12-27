@@ -65,9 +65,8 @@ if __name__ == "__main__":
     # ---------- Text Boxes ------------- #
 
     # from font_orbitron_light_webfont_18_latin1 import FONT as orbitron_font
-    from font_junction_regular_24_latin1 import FONT as standard_font
-    from font_junction_bold_72_latin1 import FONT as large_font
-    # from font_league_spartan_medium_18_latin1 import FONT as spartan_font
+    from font_league_spartan_regular_30_latin1 import FONT as standard_font
+    from font_league_spartan_semi_bold_72_latin1 import FONT as large_font
     
     # Set the font and preload letters
     # font = bitmap_font.load_font("/fonts/Helvetica-Bold-16.bdf")

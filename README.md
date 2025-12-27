@@ -5,13 +5,16 @@
 
 ```
 cp /Volumes/CIRCUITPY/boot_out.txt ./
-circup --path . install adafruit_pyportal adafruit_adt7410
+
+circup bundle-add adafruit/circuitpython-fonts # You only need to do this once
+
+circup --path . install -r circup-requirements.txt
 ```
 
 
 ## Copying to the device
 
 ```
-rsync -av --cvs-exclude --exclude=.\* --delete . /Volumes/CIRCUITPY/.
+./sync.sh
 ```
 
