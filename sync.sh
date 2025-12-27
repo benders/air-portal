@@ -57,5 +57,5 @@ fi
 
 echo "All safety checks passed. Syncing to $TARGET ..."
 sync
-rsync -rvc --cvs-exclude --exclude=.\* --exclude=boot_out.txt --exclude=__pycache__ --delete . "$TARGET/."
+rsync -rvc --cvs-exclude --exclude=.\* --exclude=boot_out.txt --exclude=__pycache__ --exclude=fonts-src/ --delete . "$TARGET/."
 sync

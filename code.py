@@ -7,6 +7,7 @@ import random
 
 # import adafruit_adt7410
 import adafruit_touchscreen
+from adafruit_bitmap_font import bitmap_font
 
 # from analogio import AnalogIn
 
@@ -63,14 +64,10 @@ if __name__ == "__main__":
                                         size=(screen_width, screen_height))
 
     # ---------- Text Boxes ------------- #
-
-    # from font_orbitron_light_webfont_18_latin1 import FONT as orbitron_font
-    from font_league_spartan_regular_30_latin1 import FONT as standard_font
-    from font_league_spartan_semi_bold_72_latin1 import FONT as large_font
     
     # Set the font and preload letters
-    # font = bitmap_font.load_font("/fonts/Helvetica-Bold-16.bdf")
-    # font.load_glyphs(b"abcdefghjiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890- ()")
+    standard_font = bitmap_font.load_font("/fonts/Federation-20-latin1.pcf")
+    large_font = bitmap_font.load_font("/fonts/Federation-96-latin1.pcf")
 
     splash = displayio.Group()
     sensor_view = displayio.Group()
@@ -80,17 +77,10 @@ if __name__ == "__main__":
     sensors_label.y = TABS_Y + 16  # Slightly lower than top edge
     sensor_view.append(sensors_label)
 
-    aqi_display = Label(large_font, text="Loading...", color=bytes(purpleair.WHITE))
+    aqi_display = Label(large_font, text="000", color=bytes(purpleair.WHITE))
     aqi_display.x = TABS_X + 16  # Indents the text layout
     aqi_display.y = 120
     sensor_view.append(aqi_display)
-
-    # display_utils.text_box(
-    #     sensors_label,
-    #     TABS_Y,
-    #     "Please wait...",
-    #     40,
-    # )
 
     board.DISPLAY.root_group = splash
     display_utils.layerVisibility("show", splash, sensor_view)
@@ -123,12 +113,8 @@ if __name__ == "__main__":
         print(sensor_metadata)
         # Change the label to the sensor name
         name = sensor_metadata["sensor"]["name"]
-        display_utils.text_box(
-            sensors_label,
-            TABS_Y,
-            name,
-            40,
-        )
+        sensors_label.text = name
+
     except Exception as e:
         print(f"Error fetching sensor metadata: {e}")
         # Continue with the program even if we can't get the initial metadata

@@ -6,8 +6,6 @@
 ```
 cp /Volumes/CIRCUITPY/boot_out.txt ./
 
-circup bundle-add adafruit/circuitpython-fonts # You only need to do this once
-
 circup --path . install -r circup-requirements.txt
 ```
 
@@ -18,3 +16,8 @@ circup --path . install -r circup-requirements.txt
 ./sync.sh
 ```
 
+## Freezing circup libs
+
+```
+circup --path . freeze -r && mv requirements.txt circup-requirements.txt
+```
