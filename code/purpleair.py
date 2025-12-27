@@ -75,30 +75,17 @@ class PurpleAirClient:
 
         param_string = "fields=" + url_encode(fields)
 
-        try:
-            print(f"Fetching data for sensor {sensor_id}")
-            # Collect garbage before making the request to free up memory on constrained devices
-            gc.collect()
-            response = self.requests.get(url + "?" + param_string, headers=headers)
-            gc.collect()
+        print(f"Fetching data for sensor {sensor_id}")
+        # Collect garbage before making the request to free up memory on constrained devices
+        gc.collect()
+        response = self.requests.get(url + "?" + param_string, headers=headers)
+        gc.collect()
 
-            # Check if request was successful
-            if response.status_code == 200:
-                return response.json()
-            else:
-                error_msg = f"API request failed with status code {response.status_code}: {response.text}"
-                print(error_msg)
-                raise Exception(error_msg)
-        except ValueError as e:
-            error_msg = f"ValueError: {e}"
-            print(error_msg)
-            raise Exception(error_msg)
-        except OSError as e:
-            error_msg = f"OSError: {e}"
-            print(error_msg)
-            raise Exception(error_msg)
-        except Exception as e:
-            error_msg = f"Unexpected error: {e}"
+        # Check if request was successful
+        if response.status_code == 200:
+            return response.json()
+        else:
+            error_msg = f"API request failed with status code {response.status_code}: {response.text}"
             print(error_msg)
             raise Exception(error_msg)
 

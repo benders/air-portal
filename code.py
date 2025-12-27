@@ -148,10 +148,11 @@ if __name__ == "__main__":
                 import microcontroller
                 microcontroller.reset()
             except Exception as e:
-                print(f"Error fetching sensor data: {e}")
+                print(f"Error fetching sensor data: {type(e)}")
+                print(e)
                 # Set a shorter deadline for retry on error
                 update_deadline = time.monotonic() + 30
-                print(f"Will retry in 30 seconds")
+                print(f"Will retry in 30 seconds\n")
                 # Set blank display on error
                 raw_color = purpleair.RED
                 aqi = None  # Blank display
