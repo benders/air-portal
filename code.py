@@ -50,10 +50,6 @@ if __name__ == "__main__":
     display = board.DISPLAY
     display.rotation = 0
 
-    # Default Label styling
-    TABS_X = 0
-    TABS_Y = 0
-
     # Touchscreen setup
     # ------Rotate 0:
     screen_width = 320
@@ -69,18 +65,44 @@ if __name__ == "__main__":
     standard_font = bitmap_font.load_font("/fonts/Federation-20-latin1.pcf")
     large_font = bitmap_font.load_font("/fonts/Federation-96-latin1.pcf")
 
+    # BG_COLOR = 0xFFAA00  # Orange
+    BG_COLOR = None  # Transparent
+    TOP_ROW = 24
+    THIRD_ROW = 180
+    BOTTOM_ROW = 210
+
     splash = displayio.Group()
     sensor_view = displayio.Group()
 
-    sensors_label = Label(standard_font, text="Please wait...", color=bytes(purpleair.WHITE))
-    sensors_label.x = TABS_X + 16  # Indents the text layout
-    sensors_label.y = TABS_Y + 16  # Slightly lower than top edge
+    sensors_label = Label(standard_font, text="Please wait...", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
+    sensors_label.x = 16  # Indents the text layout
+    sensors_label.y = TOP_ROW  # Slightly lower than top edge
     sensor_view.append(sensors_label)
 
-    aqi_display = Label(large_font, text="000", color=bytes(purpleair.WHITE))
-    aqi_display.x = TABS_X + 16  # Indents the text layout
-    aqi_display.y = 120
+    aqi_display = Label(large_font, text="000", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
+    aqi_display.x = 16  # Indents the text layout
+    aqi_display.y = 100
     sensor_view.append(aqi_display)
+
+    a_display = Label(standard_font, text="000°F", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
+    a_display.x = 16  # Indents the text layout
+    a_display.y = THIRD_ROW
+    sensor_view.append(a_display)
+
+    c_display = Label(standard_font, text="Connecting", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
+    c_display.x = 16  # Indents the text layout
+    c_display.y = BOTTOM_ROW
+    sensor_view.append(c_display)
+
+    b_display = Label(standard_font, text="100% RH", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
+    b_display.x = 320 - 16 - b_display.bounding_box[2]  # Right align
+    b_display.y = THIRD_ROW
+    sensor_view.append(b_display)
+
+    d_display = Label(standard_font, text="0000 ft", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
+    d_display.x = 320 - 16 - d_display.bounding_box[2]  # Right align
+    d_display.y = BOTTOM_ROW
+    sensor_view.append(d_display)
 
     board.DISPLAY.root_group = splash
     display_utils.layerVisibility("show", splash, sensor_view)
@@ -95,14 +117,14 @@ if __name__ == "__main__":
     else:
         raise RuntimeError("Network connection failed!")
 
-    METADATA_FIELDS = ["name", "latitude", "longitude", "altitude", "last_seen"]
+    METADATA_FIELDS = ["name", "latitude", "longitude", "altitude", "model", "last_seen"]
     # AIR_QUALITY_FIELDS = ["pm2.5", "confidence", "humidity", "temperature", "pressure"]
-    AIR_QUALITY_FIELDS = ["pm2.5", "last_seen"]
+    AIR_QUALITY_FIELDS = ["pm2.5", "temperature", "humidity", "last_seen"]
 
     API_KEY = os.getenv("PURPLEAIR_API_KEY")
     SENSOR_ID = os.getenv("PURPLEAIR_SENSOR_ID")
 
-    pyportal.network.requests.get("http://example.com")  # Warm up requests module
+    # pyportal.network.requests.get("http://example.com")  # Warm up requests module
 
     # Initialize PurpleAir client with the requests library
     purpleair_client = purpleair.PurpleAirClient(pyportal.network.requests, API_KEY)
@@ -114,6 +136,14 @@ if __name__ == "__main__":
         # Change the label to the sensor name
         name = sensor_metadata["sensor"]["name"]
         sensors_label.text = name
+
+        # Update status display
+        model = sensor_metadata["sensor"].get("model", "Unknown")
+        c_display.text = f"{model}"
+
+        # Altitude
+        altitude = sensor_metadata["sensor"].get("altitude", "?")
+        d_display.text = f"{altitude} ft"
 
     except Exception as e:
         print(f"Error fetching sensor metadata: {e}")
@@ -135,9 +165,21 @@ if __name__ == "__main__":
                 sensor_response = purpleair_client.fetch_sensor_data(SENSOR_ID, AIR_QUALITY_FIELDS)
                 print(sensor_response)
                 sensor = sensor_response.get("sensor", {})
+
+                # Calculate AQI and color from PM2.5
                 pm25 = sensor.get("pm2.5")
                 aqi = purpleair.aqiFromPM(pm25)
                 raw_color = purpleair.aqiColor(aqi)
+
+                # Update temperature display
+                temperature_f = sensor.get("temperature")
+                corrected_temperature_f = purpleair.estimate_temperature(temperature_f)
+                a_display.text = "{: 3.0f}°F".format(corrected_temperature_f)
+
+                # Update humidity display on time line
+                humidity = sensor.get("humidity")
+                corrected_humidity = purpleair.estimate_humidity(humidity)
+                b_display.text = "{:3.0f}% RH".format(humidity)
 
                 # Set new deadline
                 update_deadline = time.monotonic() + (UPDATE_INTERVAL + random.randrange(0, 30))
@@ -155,9 +197,9 @@ if __name__ == "__main__":
                 print(f"Will retry in 30 seconds\n")
                 # Set blank display on error
                 raw_color = purpleair.RED
-                aqi = None  # Blank display
+                aqi = None  # Error state
 
-        value_string = "%3d" % aqi if aqi is not None else "no data"  # Blank if aqi is None (error)
+        value_string = "% 3d" % aqi if aqi is not None else "ERR"
         aqi_display.text = value_string
         aqi_display.color = bytes(raw_color)
 

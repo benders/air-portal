@@ -9,14 +9,23 @@ for cmd in otf2bdf bdftopcf; do
     fi
 done
 
-# DPI set to 72 for compatibility with CircuitPython Fonts Bundle 
-DISPLAY_DPI=72
-FONT=Federation
+# Convert a font to PCF format
+#   $1 - font name (e.g., "Federation")
+#   $2 - font size (e.g., 20, 96)
+convert() {
+    local font="$1"
+    local size="$2"
+    
+    # 1 pixel = 1/72 inch = 1 point
+    DISPLAY_DPI=72
+
+    otf2bdf -r ${DISPLAY_DPI} -l 32_255 -p ${size} "fonts-src/${font}.ttf" -o "fonts/${font}-${size}-latin1.bdf"
+    bdftopcf -o "fonts/${font}-${size}-latin1.pcf" "fonts/${font}-${size}-latin1.bdf"
+    rm -f "fonts/${font}-${size}-latin1.bdf"
+}
 
 set -x
-rm -f fonts/${FONT}-*-latin1.bdf fonts/${FONT}-*-latin1.pcf
-for size in 20 96; do
-    otf2bdf -r ${DISPLAY_DPI} -l 32_255 -p ${size} "fonts-src/${FONT}.ttf" -o "fonts/${FONT}-${size}-latin1.bdf"
-    bdftopcf -o "fonts/${FONT}-${size}-latin1.pcf" "fonts/${FONT}-${size}-latin1.bdf"
-    rm -f "fonts/${FONT}-${size}-latin1.bdf"
-done
+rm -f fonts/*.bdf fonts/*.pcf
+
+convert Federation 20
+convert Federation 96
