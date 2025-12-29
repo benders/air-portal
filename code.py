@@ -10,8 +10,6 @@ import adafruit_touchscreen
 from adafruit_bitmap_font import bitmap_font
 
 # from analogio import AnalogIn
-
-from adafruit_display_text.label import Label
 from adafruit_pyportal import PyPortal
 
 from code import display_utils
@@ -52,12 +50,12 @@ if __name__ == "__main__":
 
     # Touchscreen setup
     # ------Rotate 0:
-    screen_width = 320
-    screen_height = 240
+    SCREEN_WIDTH = board.DISPLAY.width
+    SCREEN_HEIGHT = board.DISPLAY.height
     ts = adafruit_touchscreen.Touchscreen(board.TOUCH_XL, board.TOUCH_XR,
                                         board.TOUCH_YD, board.TOUCH_YU,
                                         calibration=((5200, 59000), (5800, 57000)),
-                                        size=(screen_width, screen_height))
+                                        size=(SCREEN_WIDTH, SCREEN_HEIGHT))
 
     # ---------- Text Boxes ------------- #
     
@@ -67,42 +65,31 @@ if __name__ == "__main__":
 
     # BG_COLOR = 0xFFAA00  # Orange
     BG_COLOR = None  # Transparent
-    TOP_ROW = 24
-    THIRD_ROW = 180
-    BOTTOM_ROW = 210
+    TOP_ROW_Y = 24
+    BIG_ROW_Y = 90
+    THIRD_ROW_Y = 170
+    BOTTOM_ROW_Y = 210
 
     splash = displayio.Group()
     sensor_view = displayio.Group()
 
-    sensors_label = Label(standard_font, text="Please wait...", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
-    sensors_label.x = 16  # Indents the text layout
-    sensors_label.y = TOP_ROW  # Slightly lower than top edge
-    sensor_view.append(sensors_label)
+    title_label = display_utils.new_label(standard_font, "left", TOP_ROW_Y, "Please wait...", BG_COLOR)
+    sensor_view.append(title_label)
+    
+    aqi_label = display_utils.new_label(large_font, "left", BIG_ROW_Y, "000", BG_COLOR)
+    sensor_view.append(aqi_label)
 
-    aqi_display = Label(large_font, text="000", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
-    aqi_display.x = 16  # Indents the text layout
-    aqi_display.y = 100
-    sensor_view.append(aqi_display)
+    a_label = display_utils.new_label(standard_font, "left", THIRD_ROW_Y, "000°F", BG_COLOR)
+    sensor_view.append(a_label)
 
-    a_display = Label(standard_font, text="000°F", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
-    a_display.x = 16  # Indents the text layout
-    a_display.y = THIRD_ROW
-    sensor_view.append(a_display)
+    c_label = display_utils.new_label(standard_font, "left", BOTTOM_ROW_Y, "Connecting", BG_COLOR)
+    sensor_view.append(c_label)
 
-    c_display = Label(standard_font, text="Connecting", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
-    c_display.x = 16  # Indents the text layout
-    c_display.y = BOTTOM_ROW
-    sensor_view.append(c_display)
+    b_label = display_utils.new_label(standard_font, "right", THIRD_ROW_Y, "100% RH", BG_COLOR)
+    sensor_view.append(b_label)
 
-    b_display = Label(standard_font, text="100% RH", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
-    b_display.x = 320 - 16 - b_display.bounding_box[2]  # Right align
-    b_display.y = THIRD_ROW
-    sensor_view.append(b_display)
-
-    d_display = Label(standard_font, text="0000 ft", color=bytes(purpleair.WHITE), background_color=BG_COLOR)
-    d_display.x = 320 - 16 - d_display.bounding_box[2]  # Right align
-    d_display.y = BOTTOM_ROW
-    sensor_view.append(d_display)
+    d_label = display_utils.new_label(standard_font, "right", BOTTOM_ROW_Y, "0000 ft", BG_COLOR)
+    sensor_view.append(d_label)
 
     board.DISPLAY.root_group = splash
     display_utils.layerVisibility("show", splash, sensor_view)
@@ -135,15 +122,15 @@ if __name__ == "__main__":
         print(sensor_metadata)
         # Change the label to the sensor name
         name = sensor_metadata["sensor"]["name"]
-        sensors_label.text = name
+        title_label.text = name
 
         # Update status display
         model = sensor_metadata["sensor"].get("model", "Unknown")
-        c_display.text = f"{model}"
+        c_label.text = f"{model}"
 
         # Altitude
         altitude = sensor_metadata["sensor"].get("altitude", "?")
-        d_display.text = f"{altitude} ft"
+        d_label.text = f"{altitude} ft"
 
     except Exception as e:
         print(f"Error fetching sensor metadata: {e}")
@@ -174,12 +161,12 @@ if __name__ == "__main__":
                 # Update temperature display
                 temperature_f = sensor.get("temperature")
                 corrected_temperature_f = purpleair.estimate_temperature(temperature_f)
-                a_display.text = "{: 3.0f}°F".format(corrected_temperature_f)
+                a_label.text = "{: 3.0f}°F".format(corrected_temperature_f)
 
                 # Update humidity display on time line
                 humidity = sensor.get("humidity")
                 corrected_humidity = purpleair.estimate_humidity(humidity)
-                b_display.text = "{:3.0f}% RH".format(humidity)
+                b_label.text = "{:3.0f}% RH".format(humidity)
 
                 # Set new deadline
                 update_deadline = time.monotonic() + (UPDATE_INTERVAL + random.randrange(0, 30))
@@ -199,9 +186,9 @@ if __name__ == "__main__":
                 raw_color = purpleair.RED
                 aqi = None  # Error state
 
-        value_string = "% 3d" % aqi if aqi is not None else "ERR"
-        aqi_display.text = value_string
-        aqi_display.color = bytes(raw_color)
+        value_string = "%3d" % aqi if aqi is not None else "ERR"
+        aqi_label.text = value_string
+        aqi_label.color = bytes(raw_color)
 
         # display_utils.layerVisibility("show", splash, sensor_view)
         time.sleep(0.1)

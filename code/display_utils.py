@@ -1,7 +1,12 @@
 import time
 
+import board
+
 from adafruit_display_text.label import Label
 from adafruit_pyportal import PyPortal
+
+SCREEN_WIDTH = board.DISPLAY.width
+SCREEN_HEIGHT = board.DISPLAY.height
 
 # Set visibility of layer
 def layerVisibility(state, layer, target):
@@ -32,3 +37,20 @@ def text_box(target, top, string, max_chars):
     target.y = int(glyph_box[3] / 2) + top
     target.text = new_text
 
+
+def new_label(font, x_pos: str, y: int, placeholder_text: str, background_color: tuple[int, int, int] | None = None) -> Label:
+    label = Label(
+        font,
+        text=placeholder_text,
+        color=bytes((255,255,255)),
+        background_color=background_color
+    )
+    if x_pos == "left":
+        label.x = 16
+    elif x_pos == "right":
+        label.x = SCREEN_WIDTH - 16 - label.bounding_box[2]
+    else:
+        raise ValueError("x_pos must be 'left' or 'right'")
+    
+    label.y = y
+    return label
