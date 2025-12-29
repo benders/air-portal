@@ -3,6 +3,7 @@
 PurpleAir Sensor Data Retrieval
 
 CHANGELOG
+* 2025-12-28: Temperature and Humidity estimation functions
 * 2025-12-23: Fix 0.0 bug, pass api_key to PurpleAirClient
 * 2025-12-14: Require instantion with requests library
 * 2025-09-02: Initial version
@@ -18,7 +19,7 @@ RED   = (255, 0, 0)
 PURPLE = (143, 63, 151)
 MAROON = (126, 0, 35)
 
-def url_encode(string):
+def url_encode(string: str) -> str:
     encoded_string = ""
     for character in string:
         if character.isalpha() or character.isdigit():
@@ -31,7 +32,7 @@ def url_encode(string):
 class PurpleAirClient:
     """Client for fetching data from PurpleAir API."""
     
-    def __init__(self, requests, api_key):
+    def __init__(self, requests, api_key: str) -> None:
         """
         Initialize PurpleAir client with a requests library implementation.
         
@@ -42,7 +43,7 @@ class PurpleAirClient:
         self.requests = requests
         self.api_key = api_key
     
-    def fetch_sensor_data(self, sensor_id, field_list):
+    def fetch_sensor_data(self, sensor_id: int | str, field_list: list[str] | str) -> dict:
         """
         Fetch data for a specific sensor from PurpleAir API.
 
@@ -90,7 +91,7 @@ class PurpleAirClient:
             raise Exception(error_msg)
 
 # Convert US AQI from raw pm2.5 data
-def aqiFromPM(pm):
+def aqiFromPM(pm: float) -> int:
     try:
         pm_float = float(pm)
     except (ValueError, TypeError):
@@ -124,7 +125,7 @@ def aqiFromPM(pm):
     else:
         raise ValueError(f"PM value ({pm_float}) is out of range")
 
-def aqiColor(aqi):
+def aqiColor(aqi: int) -> tuple[int, int, int]:
     if aqi > 300:
         return MAROON
     elif aqi > 200:
@@ -142,7 +143,7 @@ def aqiColor(aqi):
 
 
 # Calculate AQI from standard ranges
-def calcAQI(Cp, Ih, Il, BPh, BPl):
+def calcAQI(Cp: float, Ih: int, Il: int, BPh: float, BPl: float) -> int:
     a = (Ih - Il)
     b = (BPh - BPl)
     c = (Cp - BPl)
